@@ -1,0 +1,415 @@
+# External tool list. The generic client turns each entry into
+# GET/POST {base}/{resource} (or a local write_file). Same names for Open FHIR and HealthLake.
+tools:
+  - name: fhir_patient_search_demographics
+    description: Search FHIR Patient resources by demographic parameters.
+    method: GET
+    resource: Patient
+    default_count: 50
+    default_page_limit: 6
+    params:
+      address: address
+      address_city: address-city
+      address_postalcode: address-postalcode
+      address_state: address-state
+      birthdate: birthdate
+      family: family
+      gender: gender
+      given: given
+      identifier: identifier
+      name: name
+      own_name: own-name
+      own_prefix: own-prefix
+      partner_name: partner-name
+      partner_prefix: partner-prefix
+      telecom: telecom
+    properties:
+      address: {type: string}
+      address_city: {type: string}
+      address_postalcode: {type: string}
+      address_state: {type: string}
+      birthdate: {type: string, description: "e.g. '1990-01-01'"}
+      family: {type: string, description: Family name}
+      gender: {type: string, description: "e.g. 'male', 'female'"}
+      given: {type: string, description: Given name}
+      identifier: {type: string, description: Patient identifier (e.g. MRN)}
+      name: {type: string, description: Name search (family and/or given)}
+      own_name: {type: string}
+      own_prefix: {type: string}
+      partner_name: {type: string}
+      partner_prefix: {type: string}
+      telecom: {type: string}
+      legal_sex: {type: string}
+
+  - name: fhir_condition_search_problems
+    description: Search FHIR Condition resources for problems on a patient's chart.
+    method: GET
+    resource: Condition
+    default_count: 10
+    default_page_limit: 3
+    params:
+      subject: subject
+      patient: patient
+      clinical_status: clinical-status
+      category: category
+      code: code
+      onset_date: onset-date
+    properties:
+      subject: {type: string, description: "FHIR subject reference (e.g. Patient/12345)"}
+      patient: {type: string, description: "FHIR Patient id (e.g. '12345')"}
+      clinical_status: {type: string, description: "e.g. 'active', 'inactive', 'resolved'"}
+      category: {type: string, description: "e.g. 'problem-list-item'"}
+      code: {type: string, description: Condition code filter (ICD-10, SNOMED, etc.)}
+      onset_date: {type: string, description: The date a condition was noted}
+
+  - name: fhir_observation_search_labs
+    description: Search FHIR Observation resources for lab results.
+    method: GET
+    resource: Observation
+    default_count: 50
+    default_page_limit: 6
+    default_params:
+      category: laboratory
+    params:
+      patient: patient
+      subject: subject
+      category: category
+      code: code
+      date: date
+    properties:
+      patient: {type: string, description: FHIR Patient id}
+      subject: {type: string, description: FHIR subject reference}
+      category: {type: string, description: "e.g. 'laboratory'"}
+      code: {type: string, description: LOINC code filter}
+      date: {type: string, description: Date range for when the Observation was taken.}
+
+  - name: fhir_observation_search_vitals
+    description: Search FHIR Observation resources for vital signs.
+    method: GET
+    resource: Observation
+    default_count: 50
+    default_page_limit: 4
+    default_params:
+      category: vital-signs
+    params:
+      patient: patient
+      subject: subject
+      code: code
+      date: date
+      category: category
+    properties:
+      patient: {type: string, description: FHIR Patient id}
+      subject: {type: string, description: FHIR subject reference}
+      code: {type: string, description: LOINC code filter for vitals}
+      date: {type: string, description: Date range for when the Observation was taken.}
+      category: {type: string, description: "e.g. 'vital-signs'"}
+
+  - name: fhir_observation_search_social_history
+    description: Search FHIR Observation social history (tobacco, alcohol, occupation, SDOH). Always queries category=social-history.
+    method: GET
+    resource: Observation
+    default_count: 50
+    default_page_limit: 2
+    fixed_params:
+      category: social-history
+    params:
+      patient: patient
+      subject: subject
+      code: code
+      date: date
+    properties:
+      patient: {type: string, description: FHIR Patient id}
+      subject: {type: string, description: FHIR subject reference}
+      code: {type: string, description: "LOINC filter (e.g. '72166-2' tobacco, '11331-6' alcohol)"}
+      date: {type: string, description: FHIR date search using prefix syntax.}
+
+  - name: fhir_medication_request_search_orders
+    description: Search FHIR MedicationRequest resources for medication orders.
+    method: GET
+    resource: MedicationRequest
+    default_count: 50
+    default_page_limit: 2
+    params:
+      patient: patient
+      subject: subject
+      category: category
+      status: status
+      authoredon: authoredon
+      date: date
+      intent: intent
+    properties:
+      patient: {type: string, description: FHIR Patient id}
+      subject: {type: string, description: FHIR subject reference}
+      category: {type: string}
+      status: {type: string, description: "e.g. 'active', 'completed', 'cancelled'"}
+      authoredon: {type: string, description: Date prescription was authored}
+      date: {type: string, description: The medication administration date}
+      intent: {type: string, description: "e.g. 'order', 'plan', 'proposal'"}
+
+  - name: fhir_procedure_search_orders
+    description: Search FHIR Procedure resources for completed procedures.
+    method: GET
+    resource: Procedure
+    default_count: 50
+    default_page_limit: 2
+    params:
+      date: date
+      patient: patient
+      subject: subject
+      category: category
+    properties:
+      date: {type: string, description: Date or period the procedure was performed.}
+      patient: {type: string, description: FHIR Patient id}
+      subject: {type: string, description: FHIR subject reference}
+      category: {type: string}
+
+  - name: fhir_service_request_search
+    description: Search FHIR ServiceRequest resources for lab orders, imaging, referrals, and procedures.
+    method: GET
+    resource: ServiceRequest
+    default_count: 50
+    default_page_limit: 2
+    params:
+      patient: patient
+      subject: subject
+      status: status
+      intent: intent
+      category: category
+      code: code
+      authored: authored
+      requester: requester
+      performer: performer
+      encounter: encounter
+    properties:
+      patient: {type: string, description: FHIR Patient id}
+      subject: {type: string, description: FHIR subject reference}
+      status: {type: string, description: "e.g. 'active', 'completed', 'cancelled'"}
+      intent: {type: string, description: "e.g. 'order', 'plan'"}
+      category: {type: string, description: "e.g. 'laboratory', 'imaging'"}
+      code: {type: string, description: LOINC/CPT code}
+      authored: {type: string, description: Date authored using FHIR prefix syntax.}
+      requester: {type: string, description: Practitioner reference}
+      performer: {type: string, description: Organization reference}
+      encounter: {type: string, description: Encounter reference}
+
+  - name: fhir_document_reference_search_clinical_notes
+    description: Search FHIR DocumentReference resources for clinical note metadata.
+    method: GET
+    resource: DocumentReference
+    default_count: 5
+    default_page_limit: 2
+    params:
+      category: category
+      date: date
+      encounter: encounter
+      patient: patient
+      subject: subject
+      type: type
+    properties:
+      category: {type: string, description: "e.g. 'clinical-note'"}
+      date: {type: string, description: "FHIR date search using prefix syntax (ge/le)."}
+      encounter: {type: string, description: Encounter reference}
+      patient: {type: string, description: FHIR Patient id}
+      subject: {type: string, description: FHIR subject reference}
+      type: {type: string, description: LOINC code for note type}
+
+  - name: fhir_medication_request_create
+    description: Create a medication order using FHIR R4 MedicationRequest.
+    method: POST
+    resource: MedicationRequest
+    required: [patient_reference, medication_display, requester_reference]
+    defaults:
+      status: active
+      intent: order
+      authoredOn: $now
+      medicationCodeableConcept.coding.0.system: http://www.nlm.nih.gov/research/umls/rxnorm
+    body_fields:
+      patient_reference: subject.reference
+      requester_reference: requester.reference
+      medication_display: medicationCodeableConcept.text
+      medication_code: medicationCodeableConcept.coding.0.code
+      medication_system: medicationCodeableConcept.coding.0.system
+      status: status
+      intent: intent
+      dose_value: dosageInstruction.0.doseAndRate.0.doseQuantity.value
+      dose_unit: dosageInstruction.0.doseAndRate.0.doseQuantity.unit
+      frequency_text: dosageInstruction.0.text
+      route_code: dosageInstruction.0.route.coding.0.code
+      route_display: dosageInstruction.0.route.coding.0.display
+      duration_value: dispenseRequest.expectedSupplyDuration.value
+      duration_unit: dispenseRequest.expectedSupplyDuration.unit
+      dispense_quantity: dispenseRequest.quantity.value
+      dispense_unit: dispenseRequest.quantity.unit
+      num_refills: dispenseRequest.numberOfRepeatsAllowed
+      reason_code: reasonCode.0.coding.0.code
+      reason_display: reasonCode.0.coding.0.display
+      reason_system: reasonCode.0.coding.0.system
+      note_text: note.0.text
+      encounter_reference: encounter.reference
+      priority: priority
+    properties:
+      patient_reference: {type: string, description: "e.g. 'Patient/12345'"}
+      medication_display: {type: string, description: Display name of the medication}
+      requester_reference: {type: string, description: "e.g. 'Practitioner/67890'"}
+      medication_code: {type: string, description: RxNorm code}
+      medication_system: {type: string, default: http://www.nlm.nih.gov/research/umls/rxnorm}
+      status: {type: string, default: active}
+      intent: {type: string, default: order}
+      dose_value: {type: number, description: Numeric dose amount}
+      dose_unit: {type: string, description: "e.g. 'mg'"}
+      frequency_text: {type: string, description: "e.g. 'Once daily', 'BID'"}
+      route_code: {type: string, description: SNOMED CT route code}
+      route_display: {type: string, description: "e.g. 'Oral route'"}
+      duration_value: {type: number}
+      duration_unit: {type: string, description: "e.g. 'd', 'wk', 'mo'"}
+      dispense_quantity: {type: number}
+      dispense_unit: {type: string}
+      num_refills: {type: integer}
+      reason_code: {type: string}
+      reason_display: {type: string}
+      reason_system: {type: string}
+      note_text: {type: string}
+      encounter_reference: {type: string}
+      priority: {type: string, description: "'routine', 'urgent', 'asap', 'stat'"}
+
+  - name: fhir_service_request_create
+    description: Create a FHIR ServiceRequest to place orders for labs, imaging, procedures, or referrals.
+    method: POST
+    resource: ServiceRequest
+    required: [patient_reference, code_code, code_display, requester_reference]
+    defaults:
+      status: active
+      intent: order
+      authoredOn: $now
+      category.0.coding.0.system: http://snomed.info/sct
+      category.0.coding.0.code: "108252007"
+      category.0.coding.0.display: Laboratory procedure
+      code.coding.0.system: http://loinc.org
+    body_fields:
+      patient_reference: subject.reference
+      requester_reference: requester.reference
+      code_code: code.coding.0.code
+      code_display: code.coding.0.display
+      code_system: code.coding.0.system
+      category_code: category.0.coding.0.code
+      category_display: category.0.coding.0.display
+      category_system: category.0.coding.0.system
+      status: status
+      intent: intent
+      priority: priority
+      encounter_reference: encounter.reference
+      performer_reference: performer.0.reference
+      reason_code: reasonCode.0.coding.0.code
+      reason_display: reasonCode.0.coding.0.display
+      reason_system: reasonCode.0.coding.0.system
+      note_text: note.0.text
+      occurrence_datetime: occurrenceDateTime
+      body_site_code: bodySite.0.coding.0.code
+      body_site_display: bodySite.0.coding.0.display
+      body_site_system: bodySite.0.coding.0.system
+    properties:
+      patient_reference: {type: string, description: "e.g. 'Patient/12345'"}
+      code_code: {type: string, description: Service code (LOINC/CPT/SNOMED)}
+      code_display: {type: string, description: Display name for the service}
+      requester_reference: {type: string, description: Ordering practitioner reference}
+      category_code: {type: string, default: "108252007", description: "SNOMED category (108252007=Lab, 363679005=Imaging)"}
+      category_display: {type: string, default: Laboratory procedure}
+      category_system: {type: string, default: http://snomed.info/sct}
+      code_system: {type: string, default: http://loinc.org}
+      status: {type: string, default: active}
+      intent: {type: string, default: order}
+      priority: {type: string, description: "'routine', 'urgent', 'asap', 'stat'"}
+      encounter_reference: {type: string}
+      performer_reference: {type: string}
+      reason_code: {type: string}
+      reason_display: {type: string}
+      reason_system: {type: string}
+      note_text: {type: string}
+      occurrence_datetime: {type: string}
+      body_site_code: {type: string}
+      body_site_display: {type: string}
+      body_site_system: {type: string}
+
+  - name: fhir_communication_create_message
+    description: Create a FHIR Communication resource to send a secure message to a provider.
+    method: POST
+    resource: Communication
+    required: [patient_reference, message_text]
+    defaults:
+      status: in-progress
+      sent: $now
+    body_fields:
+      patient_reference: subject.reference
+      message_text: payload.0.contentString
+      recipient_reference: recipient.0.reference
+      based_on_service_request: basedOn.0.reference
+      part_of_task: partOf.0.reference
+      in_response_to_communication: inResponseTo.0.reference
+      encounter_reference: encounter.reference
+      sender_reference: sender.reference
+      status: status
+    properties:
+      patient_reference: {type: string, description: "e.g. 'Patient/12345'"}
+      message_text: {type: string, description: Message content to send}
+      recipient_reference: {type: string, description: "e.g. 'Practitioner/67890'"}
+      based_on_service_request: {type: string}
+      part_of_task: {type: string}
+      in_response_to_communication: {type: string}
+      encounter_reference: {type: string}
+      sender_reference: {type: string}
+      status: {type: string, default: in-progress}
+
+  - name: fhir_appointment_create
+    description: Create a FHIR Appointment to schedule a clinic visit or follow-up.
+    method: POST
+    resource: Appointment
+    required: [patient_reference, practitioner_reference, description]
+    defaults:
+      status: booked
+      participant.0.status: accepted
+      participant.1.status: accepted
+    body_fields:
+      patient_reference: participant.0.actor.reference
+      practitioner_reference: participant.1.actor.reference
+      description: description
+      start: start
+      end: end
+      status: status
+      based_on: basedOn.0.reference
+      appointment_type_code: appointmentType.coding.0.code
+      appointment_type_display: appointmentType.coding.0.display
+      appointment_type_system: appointmentType.coding.0.system
+      reason_code: reasonCode.0.coding.0.code
+      reason_display: reasonCode.0.coding.0.display
+      reason_system: reasonCode.0.coding.0.system
+      note_text: note.0.text
+      service_type_code: serviceType.0.coding.0.code
+      service_type_display: serviceType.0.coding.0.display
+      minutes_duration: minutesDuration
+    properties:
+      patient_reference: {type: string, description: "e.g. 'Patient/12345'"}
+      practitioner_reference: {type: string, description: "e.g. 'Practitioner/67890'"}
+      description: {type: string, description: Human-readable description}
+      start: {type: string, description: Start datetime ISO 8601}
+      end: {type: string, description: End datetime ISO 8601}
+      status: {type: string, default: booked}
+      based_on: {type: string, description: "ServiceRequest this appointment fulfills"}
+      appointment_type_code: {type: string}
+      appointment_type_display: {type: string}
+      appointment_type_system: {type: string, default: http://terminology.hl7.org/CodeSystem/v2-0276}
+      reason_code: {type: string}
+      reason_display: {type: string}
+      reason_system: {type: string}
+      note_text: {type: string}
+      service_type_code: {type: string}
+      service_type_display: {type: string}
+      minutes_duration: {type: integer}
+
+  - name: write_file
+    kind: write_file
+    description: Write text content to a file. Creates parent directories if needed. Paths under /workspace/output map to the job directory.
+    required: [file_path, content]
+    properties:
+      file_path: {type: string, description: Absolute path to write to}
+      content: {type: string, description: Text content to write}
+      mode: {type: string, description: "'w' to overwrite, 'a' to append", default: w}

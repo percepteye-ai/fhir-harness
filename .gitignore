@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+*.egg-info/
+jobs/
+.env
+.DS_Store
+services/frontend/node_modules/
+services/frontend/.next/
+services/frontend/tsconfig.tsbuildinfo
+*.tmp

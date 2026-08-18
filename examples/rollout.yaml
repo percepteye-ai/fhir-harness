@@ -1,0 +1,40 @@
+# Tested defaults (Tinker ckpt 0077 + AWS HealthLake).
+# Auth keys are not in this file — set TINKER_API_KEY and AWS_* in the environment.
+# Omit a YAML key (do not use "") if you want the matching PE_* / AWS_* env default.
+
+model:
+  backend: tinker
+  sampler_path: tinker://07ea1f18-88c1-503c-a88b-b3923034710a:train:0/sampler_weights/0077
+  base_model: Qwen/Qwen3.6-35B-A3B
+  renderer: qwen3_5
+  # openai (unused when backend is tinker)
+  # base_url: ""
+  # model: ""
+  # api_key: EMPTY
+
+fhir:
+  backend: aws
+  base_url: https://healthlake.us-east-1.amazonaws.com/datastore/b08fb04f8766442ceb014071de0ca9bc/r4
+  region: us-east-1
+  virtual_writes: true
+  tools_file: tools.yaml
+  # access_key_id / secret_access_key / bearer_token / api_key — from env
+
+rollout:
+  instruction: ""
+  instruction_file: instruction.md
+  system_prompt: null
+  agent_mode: code_exec_only
+  max_main_turns: 30
+  wallclock_cap_s: 600
+  code_exec_timeout_s: 60
+  max_tool_result_chars: 6000
+  stdout_truncate_bytes: 8192
+  enable_thinking: true
+  temperature: 1.0
+  top_p: 0.8
+  top_k: 20
+  min_p: 0.0
+  presence_penalty: 1.5
+  max_response_tokens: 4096
+  job_dir: null
